@@ -11,10 +11,10 @@ const grey900 = 'var(--grey900)';
 const grey300 = 'var(--grey300)';
 
 const cats = [
-  { id: 1, name: "Whiskers", breed: "Persian Mix", age: "2 yrs", mood: "Playful", photoColor: "#FF8C42", badgeLabel: "FEATURED", badgeColor: accent },
-  { id: 2, name: "Luna", breed: "Siamese", age: "1 yr", mood: "Calm", photoColor: grey700, badgeLabel: "NEW", badgeColor: grey900 },
-  { id: 3, name: "Snowball", breed: "Persian", age: "4 yrs", mood: "Sleepy", photoColor: grey300, badgeLabel: "URGENT", badgeColor: error },
-  { id: 4, name: "Cotton", breed: "Persian Mix", age: "3 mos", mood: "Playful", photoColor: "#FFE8D6", badgeLabel: "AVAILABLE", badgeColor: success },
+  { id: 1, name: "Whiskers", breed: "Persian Mix", age: "2 yrs", mood: "Playful", photoColor: "#FF8C42", badgeLabel: "FEATURED", badgeColor: accent, imageUrl: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
+  { id: 2, name: "Luna", breed: "Siamese", age: "1 yr", mood: "Calm", photoColor: grey700, badgeLabel: "NEW", badgeColor: grey900, imageUrl: "https://images.unsplash.com/photo-1513360371669-4adf3dd7dff8?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
+  { id: 3, name: "Snowball", breed: "Persian", age: "4 yrs", mood: "Sleepy", photoColor: grey300, badgeLabel: "URGENT", badgeColor: error, imageUrl: "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
+  { id: 4, name: "Cotton", breed: "Persian Mix", age: "3 mos", mood: "Playful", photoColor: "#FFE8D6", badgeLabel: "AVAILABLE", badgeColor: success, imageUrl: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
 ];
 
 /* =========================================================================
@@ -67,7 +67,7 @@ const Button = ({ label, variant = 'primary', onClick }: { label: string; varian
 
 const CatCard = ({ cat, onClick }: { cat: any; onClick: () => void; }) => (
   <article className="cat-card" onClick={onClick}>
-    <div className="cat-card-photo" style={{ backgroundColor: cat.photoColor }}>
+    <div className="cat-card-photo" style={{ backgroundColor: cat.photoColor, backgroundImage: `url(${cat.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <span className="badge" style={{ backgroundColor: cat.badgeColor }}>{cat.badgeLabel}</span>
     </div>
     <div className="cat-card-info">
@@ -163,7 +163,7 @@ const SearchScreen = ({ onCatClick }: { onCatClick: (cat: any) => void }) => {
         <div className="result-list">
           {cats.filter(c => c.breed.includes('Persian')).map(cat => (
             <div key={cat.id} className="result-card" onClick={() => onCatClick(cat)}>
-              <div className="result-thumb" style={{ backgroundColor: cat.photoColor }}></div>
+              <div className="result-thumb" style={{ backgroundColor: cat.photoColor, backgroundImage: `url(${cat.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
               <div className="result-info">
                 <h3>{cat.name}</h3><p>{cat.breed}</p>
                 <span className="badge" style={{backgroundColor: cat.badgeColor}}>{cat.badgeLabel}</span>
@@ -182,7 +182,7 @@ const CatProfileScreen = ({ cat, onBack, onAdopt }: { cat: any; onBack: () => vo
     <NavBar title="CAT PROFILE" showBack onBack={onBack} />
     <div className="profile-hero">
       <div className="profile-accent" />
-      <div className="profile-avatar"><div className="profile-avatar-inner" /></div>
+      <div className="profile-avatar"><div className="profile-avatar-inner" style={{ backgroundImage: `url(${cat.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} /></div>
       <h1 className="profile-name">{cat.name}</h1>
       <p className="profile-breed">{cat.breed} · {cat.age} · Female</p>
       <div className="profile-badges">
@@ -219,7 +219,7 @@ const AdoptFormScreen = ({ cat, onBack, onSubmit }: { cat: any; onBack: () => vo
       </div>
       <div className="cat-strip">
         <div className="cat-strip-accent" />
-        <div className="cat-strip-avatar" />
+        <div className="cat-strip-avatar" style={{ backgroundImage: `url(${cat.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
         <div style={{ flex: 1 }}>
           <h3 style={{ fontSize: '1.2rem', marginBottom: '4px' }}>{cat.name}</h3>
           <p style={{ fontSize: '0.85rem', color: grey500 }}>{cat.breed} · {cat.age} · Female</p>
@@ -259,7 +259,7 @@ const SuccessScreen = ({ cat, onFinish }: { cat: any; onFinish: () => void }) =>
       <div><h1 className="celeb-h1">APPLICATION</h1><h1 className="celeb-h2">SUBMITTED!</h1></div>
       <p className="celeb-desc">{cat.name} is waiting to meet you.<br/>We'll be in touch within 24 hours.</p>
       <div className="mini-card">
-        <div className="mini-card-avatar" />
+        <div className="mini-card-avatar" style={{ backgroundImage: `url(${cat.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
         <div><h4>{cat.name}</h4><p>Application #2026-0419</p></div>
       </div>
       <AlertRow type="Success" message="Your application has been sent to our shelter team." />
