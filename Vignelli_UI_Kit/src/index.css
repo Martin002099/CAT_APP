@@ -1,0 +1,35 @@
+:root {
+  --orange-100: #FFE8D6;
+  --orange-300: #FF8C42;
+  --orange-500: #E8450A;
+  --orange-700: #B33000;
+  --orange-900: #6B1A00;
+  --white: #FFFFFF;
+  --n100: #F5F5F0;
+  --n300: #C8C8C0;
+  --n500: #787870;
+  --n700: #2E2E28;
+  --n900: #141410;
+  --error: #CC1A00;
+  --success: #1A7A3C;
+  --info: #3A3ADB;
+  --accent: #E8450A;
+  --bg: #F5F5F0;
+  --surface: #FFFFFF;
+  --ink: #141410;
+  --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  display: flex;
+  min-height: 100vh;
+}

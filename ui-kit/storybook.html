@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vignelli System — UI Kit Storybook</title>
+<style>
+  /* ── Tokens — exact values from Figma VariableCollectionId:63:2 ─── */
+  :root {
+    --o100:#5A57E0;--o300:#FF8C42;--o500:#E8450A;--o700:#B33000;--o900:#6B1A00;
+    --w:#FFFFFF;--n100:#F5F5F0;--n300:#C8C8C0;--n500:#787870;--n700:#2E2E28;--n900:#141410;
+    --err:#CC1A00;--suc:#1A7A3C;--inf:#3A3ADB;
+    --font:'Helvetica Neue',Helvetica,Arial,sans-serif;--sb:240px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--n100);color:var(--n900);display:flex;min-height:100vh}
+
+  /* Sidebar */
+  .sb{width:var(--sb);background:var(--n900);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;display:flex;flex-direction:column;z-index:100}
+  .logo{padding:24px 16px;border-bottom:4px solid var(--o500)}
+  .logo-eye{font-size:10px;font-weight:700;color:var(--o500);letter-spacing:.1em;margin-bottom:4px}
+  .logo-name{font-size:22px;font-weight:900;color:var(--w);line-height:1}
+  .logo-sub{font-size:10px;color:var(--n500);margin-top:6px}
+  .nav-sec{padding:12px 16px 6px;font-size:9px;font-weight:700;color:var(--n500);letter-spacing:.12em;text-transform:uppercase;margin-top:8px}
+  .nl{display:flex;align-items:center;gap:8px;padding:9px 16px;color:var(--n300);font-size:12px;font-weight:500;cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:background .1s,color .1s}
+  .nl:hover{background:rgba(255,255,255,.05);color:var(--w)}
+  .nl.active{background:rgba(232,69,10,.15);color:var(--o500);font-weight:700}
+  .nl::before{content:'';width:3px;height:3px;border-radius:50%;background:currentColor;flex-shrink:0}
+  .sb-foot{margin-top:auto;padding:12px 16px;border-top:1px solid rgba(255,255,255,.08);font-size:10px;color:var(--n700)}
+
+  /* Main */
+  .main{margin-left:var(--sb);flex:1;display:flex;flex-direction:column}
+  .topbar{background:var(--w);border-bottom:1px solid var(--n300);padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+  .bc{font-size:12px;color:var(--n500);display:flex;align-items:center;gap:8px}
+  .bc strong{color:var(--n900);font-weight:700}
+  .tr{display:flex;align-items:center;gap:12px}
+  .tag{display:inline-flex;align-items:center;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:.05em;border-radius:9999px}
+  .tag-o{background:var(--o100);color:var(--o700)}.tag-g{background:var(--n100);color:var(--n500);border:1px solid var(--n300)}
+  .flink{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:var(--n100);border:1px solid var(--n300);border-radius:4px;font-size:10px;font-weight:700;color:var(--n700);text-decoration:none;transition:border-color .1s;margin-bottom:20px}
+  .flink:hover{border-color:var(--o500);color:var(--o500)}
+
+  /* Pages */
+  .page{padding:56px 48px;max-width:1100px}
+  .hidden{display:none}
+  .pt{font-size:40px;font-weight:900;line-height:1;margin-bottom:8px}
+  .pr{height:4px;background:var(--o500);width:48px;margin-bottom:24px}
+  .pd{font-size:15px;color:var(--n500);max-width:600px;margin-bottom:32px;line-height:1.6}
+  .story{margin-bottom:48px}
+  .st{font-size:11px;font-weight:700;color:var(--n500);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+  .st::after{content:'';flex:1;height:1px;background:var(--n300)}
+
+  /* Canvas */
+  .cv{background:var(--n100);border:1px solid var(--n300);border-radius:4px;padding:48px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:12px;position:relative}
+  .cv.dk{background:var(--n900);border-color:var(--n700)}
+  .cv.col{flex-direction:column;align-items:flex-start}
+  .cv-lbl{position:absolute;top:8px;right:12px;font-size:9px;font-weight:700;color:var(--n300);letter-spacing:.08em;text-transform:uppercase}
+
+  /* Code + table */
+  .code{background:var(--n900);border-radius:4px;padding:16px 20px;font-family:'Courier New',monospace;font-size:12px;line-height:1.7;color:var(--n300);overflow-x:auto;margin-bottom:12px}
+  .kw{color:var(--o500);font-weight:700}.str{color:var(--o300)}.prop{color:#7EC8E3}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:32px}
+  th{background:var(--n100);padding:8px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--n500);border:1px solid var(--n300)}
+  td{padding:8px 12px;border:1px solid var(--n300);vertical-align:top}
+  td code{font-family:'Courier New',monospace;font-size:11px;background:var(--n100);padding:1px 5px;border-radius:2px;color:var(--o500)}
+  tr:hover td{background:rgba(232,69,10,.03)}
+
+  /* Token grid */
+  .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:32px}
+  .tc{background:var(--w);border:1px solid var(--n300);border-radius:4px;overflow:hidden}
+  .sw{height:48px}.ti{padding:8px 12px}
+  .tn{font-size:10px;font-weight:700;font-family:'Courier New',monospace;margin-bottom:2px}
+  .tv{font-size:10px;color:var(--n500);font-family:'Courier New',monospace}
+  .tdesc{font-size:9px;color:var(--n300);margin-top:1px}
+  .sub{font-size:10px;color:var(--n500);font-family:'Courier New',monospace;white-space:nowrap}
+
+  /* ── BUTTON ─────────────────────────────────────────────────────────
+     From Figma node 63:1214
+     font-size: 11px (confirmed from node data)
+     width: 200px fixed (except Destructive Default = hug content)
+     height: 52px ─────────────────────────────────────────────────── */
+  .btn{display:inline-flex;align-items:center;justify-content:center;height:52px;padding:0 24px;
+    font-family:var(--font);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    cursor:pointer;border:none;width:200px;transition:background .1s,color .1s,border-color .1s}
+
+  /* Primary: default #e8450a | hover #b33000 | disabled #c8c8c0 — all white text */
+  .btn-p{background:var(--o500);color:var(--w)}
+  .btn-p-hov{background:var(--o700);color:var(--w)}
+  .btn-p-dis{background:var(--n300);color:var(--w)}
+
+  /* Secondary: default white bg + #141410 border/text | hover #2e2e28 bg white text | disabled #c8c8c0 */
+  .btn-s{background:var(--w);color:var(--n900);border:2px solid var(--n900)}
+  .btn-s-hov{background:var(--n700);color:var(--w);border:none}
+  .btn-s-dis{background:var(--n300);color:var(--w);border:none}
+
+  /* Destructive: default #cc1a00 hug-content | hover #a01400 | disabled #c8c8c0 */
+  .btn-d{background:var(--err);color:var(--w);width:auto}  /* hug content — Figma w:139 */
+  .btn-d-hov{background:#a01400;color:var(--w)}
+  .btn-d-dis{background:var(--n300);color:var(--w)}
+
+  /* Ghost: default transparent + #e8450a border/text | hover #ffe8d6 bg + border | disabled transparent + #c8c8c0 */
+  .btn-g{background:transparent;color:var(--o500);border:2px solid var(--o500)}
+  .btn-g-hov{background:var(--o100);color:var(--o500);border:2px solid var(--o500)}
+  .btn-g-dis{background:transparent;color:var(--n300);border:2px solid var(--n300)}
+
+  /* ── BADGE ─────────────────────────────────────────────────────────
+     From Figma node 63:1263
+     font-size: 9px Bold (confirmed from node data — was 10px, now 9px)
+     border-radius: 0px (confirmed — all badges are sharp)
+     padding: 5px 12px ─────────────────────────────────────────────── */
+  .bdg{display:inline-flex;align-items:center;justify-content:center;
+    padding:5px 12px;font-size:9px;font-weight:700;letter-spacing:.08em;
+    text-transform:uppercase;border-radius:0;white-space:nowrap}
+
+  /* Featured: #e8450a bg, white text */
+  .bdg-ft{background:var(--o500);color:var(--w)}
+  /* New: #141410 bg, white text */
+  .bdg-nw{background:var(--n900);color:var(--w)}
+  /* Sale: #cc1a00 bg, white text */
+  .bdg-sl{background:var(--err);color:var(--w)}
+  /* Sold Out: #c8c8c0 bg, #2e2e28 text — solid grey (no outline) */
+  .bdg-so{background:var(--n300);color:var(--n700)}
+  /* Active: #1a7a3c bg, white text */
+  .bdg-ac{background:var(--suc);color:var(--w)}
+  /* Draft: #f5f5f0 bg + #c8c8c0 border, #787870 text */
+  .bdg-dr{background:var(--n100);color:var(--n500);border:1px solid var(--n300)}
+  /* Disabled: all → #c8c8c0 bg, white text */
+  .bdg-dis{background:var(--n300);color:var(--w);border:none}
+
+  /* ── INPUT ─────────────────────────────────────────────────────────
+     From Figma node 63:1335
+     height: 48px, border: 2px, radius: 0, padding: 0 14px ────────── */
+  .iw{display:flex;flex-direction:column;gap:4px;width:220px}
+  .il{font-size:10px;font-weight:700;color:var(--n500)}
+  .il.foc{color:var(--o500)}
+  .if{height:48px;border:2px solid var(--n300);background:var(--w);display:flex;align-items:center;padding:0 14px;gap:8px}
+  .if input{border:none;outline:none;flex:1;font-family:var(--font);font-size:13px;color:var(--n900);background:transparent}
+  .if input::placeholder{color:var(--n300)}
+  .if.foc{border-color:var(--o500)}
+  .if.fill{border-color:var(--n700)}
+  .if.err{border-color:var(--err)}
+  .if.dis{background:var(--n100);border-color:var(--n300)}
+  .iico{width:14px;height:14px;border-radius:50%;background:var(--n300);flex-shrink:0}
+  .iico.eye{border-radius:0;height:8px}
+  .ierr{font-size:10px;font-weight:700;color:var(--err)}
+
+  /* ── ALERT ─────────────────────────────────────────────────────────
+     From Figma node 63:1397
+     width: 580px, height: 60px
+     Structure: 4px bar | 16px Gap | content | dismiss
+     Dismissed bg: #f5f5f0 (page bg), bar: #c8c8c0 ──────────────── */
+  .alt{display:flex;align-items:stretch;width:100%;max-width:580px}
+  .alt-bar{width:4px;flex-shrink:0}
+  .alt-gap{width:16px;flex-shrink:0}  /* Gap spacer — confirmed 16px from Figma */
+  .alt-body{flex:1;padding:10px 16px 10px 0}
+  .alt-title{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+  .alt-msg{font-size:12px;color:var(--n700);line-height:1.4}
+  .alt-x{padding:0 16px;color:var(--n500);font-size:12px;display:flex;align-items:center;cursor:pointer}
+
+  .alt-notice{background:#FFF3EE}
+  .alt-notice .alt-bar{background:var(--o500)}
+  .alt-notice .alt-title{color:var(--o500)}
+
+  .alt-error{background:#FFF0EE}
+  .alt-error .alt-bar{background:var(--err)}
+  .alt-error .alt-title{color:var(--err)}
+
+  .alt-success{background:#EEF7F2}
+  .alt-success .alt-bar{background:var(--suc)}
+  .alt-success .alt-title{color:var(--suc)}
+
+  .alt-info{background:#F0F0FF}
+  .alt-info .alt-bar{background:var(--inf)}
+  .alt-info .alt-title{color:var(--inf)}
+
+  /* Dismissed: bg #f5f5f0, bar + title #c8c8c0 */
+  .alt.dis{background:var(--n100)}
+  .alt.dis .alt-bar{background:var(--n300)}
+  .alt.dis .alt-title{color:var(--n300)}
+  .alt.dis .alt-msg{color:var(--n300);font-style:italic}
+
+  /* ── NAV ────────────────────────────────────────────────────────── */
+  .nav{width:100%;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+  .nav.dk{background:var(--n900)}.nav.lt{background:var(--w);border:1px solid var(--n300)}
+  .nav-brand{display:flex;align-items:center;gap:12px}
+  .nav-acc{width:4px;height:32px;background:var(--o500)}
+  .nav-nm{font-size:20px;font-weight:900}
+  .nav.dk .nav-nm{color:var(--w)}.nav.lt .nav-nm{color:var(--n900)}
+  .nav-links{display:flex;align-items:center;gap:32px}
+  .nav-li{font-size:12px;font-weight:400;cursor:pointer}
+  .nav.dk .nav-li{color:var(--n300)}.nav.lt .nav-li{color:var(--n700)}
+  .nav-li.act{color:var(--o500);font-weight:700}
+  .nav-cta{padding:0 16px;height:32px;font-family:var(--font);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:none}
+  .nav.dk .nav-cta{background:var(--o500);color:var(--w)}.nav.lt .nav-cta{background:var(--n900);color:var(--w)}
+
+  /* ── AVATAR ─────────────────────────────────────────────────────── */
+  .ava{display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+  .ava-sm{width:32px;height:32px;font-size:10px}
+  .ava-md{width:48px;height:48px;font-size:12px}
+  .ava-lg{width:64px;height:64px;font-size:20px}
+  .ava-brand{background:var(--o500);color:var(--w)}
+  .ava-dark{background:var(--n900);color:var(--w)}
+  .ava-light{background:var(--n300);color:var(--n900)}
+  .ava-outline{background:var(--w);color:var(--o500);border:2px solid var(--o500)}
+
+  /* ── CARD ───────────────────────────────────────────────────────── */
+  .card{width:280px;height:240px;display:flex;flex-direction:column;overflow:hidden}
+  .card.lt{background:var(--w)}.card.dk{background:var(--n900)}.card.br{background:var(--o500)}
+  .card-rule{height:6px;width:100%;flex-shrink:0}
+  .card-body{padding:20px;flex:1;display:flex;flex-direction:column;gap:12px}
+  .card-eye{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+  .card-stat{font-size:80px;font-weight:900;line-height:1}
+  .card-title{font-size:28px;font-weight:700;line-height:1.2}
+  .card-txt{font-size:12px;line-height:1.5}
+  .card-div{height:1px;width:100%}
+  .card-lnk{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
+  .card.lt .card-eye{color:var(--o500)}.card.lt .card-stat,.card.lt .card-title{color:var(--n900)}
+  .card.lt .card-txt{color:var(--n500)}.card.lt .card-div{background:var(--n300)}.card.lt .card-lnk{color:var(--o500)}
+  .card.dk .card-eye{color:var(--n300)}.card.dk .card-stat,.card.dk .card-title{color:var(--w)}
+  .card.dk .card-txt{color:var(--n300)}.card.dk .card-div{background:var(--n700)}.card.dk .card-lnk{color:var(--o500)}
+  .card.br .card-eye,.card.br .card-stat,.card.br .card-title,.card.br .card-lnk{color:var(--w)}
+  .card.br .card-txt{color:var(--o100)}.card.br .card-div{background:rgba(255,255,255,.3)}
+  .card-cta{margin:0 20px 20px;height:32px;display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:none}
+  .card.lt .card-cta,.card.dk .card-cta{background:var(--o500);color:var(--w)}
+  .card.br .card-cta{background:var(--w);color:var(--o500)}
+
+  /* Type scale / spacing helpers */
+  .type-row{display:flex;align-items:baseline;gap:32px;padding:16px 20px;border-bottom:1px solid var(--n300)}
+  .type-meta{width:160px;flex-shrink:0;font-size:10px;color:var(--n500);font-family:'Courier New',monospace}
+  .sp-demo{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+  .sp-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .sp-block{background:var(--o500)}
+  .sp-lbl{font-size:9px;color:var(--n500);font-family:'Courier New',monospace;text-align:center}
+
+  /* change badge */
+  .change{display:inline-flex;align-items:center;padding:2px 8px;font-size:9px;font-weight:700;background:#FFF3EE;color:var(--o500);border:1px solid var(--o100);border-radius:9999px;margin-left:8px;letter-spacing:.05em}
+</style>
+</head>
+<body>
+<aside class="sb">
+  <div class="logo">
+    <div class="logo-eye">Vignelli System</div>
+    <div class="logo-name">UI KIT</div>
+    <div class="logo-sub">Claude to Figma · v1.1</div>
+  </div>
+  <div class="nav-sec">Foundation</div>
+  <button class="nl" onclick="show('colors')">Colors</button>
+  <button class="nl" onclick="show('type')">Typography</button>
+  <button class="nl" onclick="show('spacing')">Spacing &amp; Grid</button>
+  <div class="nav-sec">Components</div>
+  <button class="nl active" onclick="show('button')">Button <span class="change">Updated</span></button>
+  <button class="nl" onclick="show('badge')">Badge <span class="change">Updated</span></button>
+  <button class="nl" onclick="show('input')">Input</button>
+  <button class="nl" onclick="show('alert')">Alert</button>
+  <button class="nl" onclick="show('navigation')">Navigation</button>
+  <button class="nl" onclick="show('avatar')">Avatar</button>
+  <button class="nl" onclick="show('card')">Card</button>
+  <div class="sb-foot">Figma: Claude to Figma<br>71 tokens · 7 components · v1.1</div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="bc">Vignelli System &nbsp;/&nbsp; <strong id="bc">Button</strong></div>
+    <div class="tr">
+      <span class="tag tag-g">71 Tokens</span>
+      <span class="tag tag-o">7 Components</span>
+      <a class="flink" href="https://www.figma.com/design/ZlxAy3fHcV7aTgJdN4nfbh/Claude-to-Figma" target="_blank" style="margin-bottom:0">↗ Open in Figma</a>
+    </div>
+  </div>
+
+  <!-- ══ BUTTON ══════════════════════════════════════════════════════ -->
+  <div class="page" id="page-button">
+    <div class="pt">Button</div><div class="pr"></div>
+    <p class="pd">4 types × 3 states = 12 variants. Height: 52px. Font: 11px Bold (updated). Destructive Default hugs content (updated). Sharp corners — radius: 0.</p>
+    <a class="flink" href="https://www.figma.com/design/ZlxAy3fHcV7aTgJdN4nfbh/Claude-to-Figma?node-id=63-1214" target="_blank">↗ Figma node 63:1214</a>
+
+    <div class="story"><div class="st">Default</div>
+      <div class="cv"><span class="cv-lbl">State: Default</span>
+        <button class="btn btn-p">PRIMARY</button>
+        <button class="btn btn-s">SECONDARY</button>
+        <button class="btn btn-d">DESTRUCTIVE</button><!-- hug content — 139px -->
+        <button class="btn btn-g">GHOST</button>
+      </div>
+    </div>
+
+    <div class="story"><div class="st">Hover</div>
+      <div class="cv"><span class="cv-lbl">State: Hover</span>
+        <button class="btn btn-p-hov" style="width:200px">PRIMARY</button>
+        <button class="btn btn-s-hov" style="width:200px">SECONDARY</button><!-- dark bg white text (updated) -->
+        <button class="btn btn-d-hov" style="width:200px">DESTRUCTIVE</button><!-- #a01400 (updated) -->
+        <button class="btn btn-g-hov" style="width:200px">GHOST</button>
+      </div>
+    </div>
+
+    <div class="story"><div class="st">Disabled</div>
+      <div class="cv"><span class="cv-lbl">State: Disabled</span>
+        <button class="btn btn-p-dis" style="width:200px" disabled>PRIMARY</button>
+        <button class="btn btn-s-dis" style="width:200px" disabled>SECONDARY</button>
+        <button class="btn btn-d-dis" style="width:200px" disabled>DESTRUCTIVE</button>
+        <button class="btn btn-g-dis" style="width:200px" disabled>GHOST</button>
+      </div>
+    </div>
+
+    <div class="story"><div class="st">What changed in v1.1</div>
+      <table>
+        <thead><tr><th>Property</th><th>Before</th><th>After (from Figma)</th></tr></thead>
+        <tbody>
+          <tr><td><code>font-size</code></td><td>12px</td><td><strong>11px</strong> — confirmed from node data</td></tr>
+          <tr><td>Destructive Default width</td><td>200px fixed</td><td><strong>hug content</strong> (auto) — Figma w:139</td></tr>
+          <tr><td>Destructive Hover bg</td><td>#991500</td><td><strong>#a01400</strong></td></tr>
+          <tr><td>Secondary Hover</td><td>bg #141410, white text</td><td><strong>bg #2e2e28, white text, no border</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="story"><div class="st">Props</div>
+      <table>
+        <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Primary"|"Secondary"|"Destructive"|"Ghost"</code></td><td><code>"Primary"</code></td><td>Visual variant</td></tr>
+          <tr><td><code>state</code></td><td><code>"Default"|"Hover"|"Disabled"</code></td><td><code>"Default"</code></td><td>Interaction state</td></tr>
+          <tr><td><code>children</code></td><td><code>ReactNode</code></td><td>—</td><td>Label text (uppercase)</td></tr>
+          <tr><td><code>onClick</code></td><td><code>() => void</code></td><td>—</td><td>Click handler</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ BADGE ═══════════════════════════════════════════════════════ -->
+  <div class="page hidden" id="page-badge">
+    <div class="pt">Badge</div><div class="pr"></div>
+    <p class="pd">6 types × 2 states = 12 variants. Font: 9px Bold (updated from 10px). Radius: 0 (updated — all sharp). Sold Out and Draft styles updated.</p>
+    <a class="flink" href="https://www.figma.com/design/ZlxAy3fHcV7aTgJdN4nfbh/Claude-to-Figma?node-id=63-1263" target="_blank">↗ Figma node 63:1263</a>
+
+    <div class="story"><div class="st">Default</div>
+      <div class="cv"><span class="cv-lbl">State: Default</span>
+        <span class="bdg bdg-ft">FEATURED</span>
+        <span class="bdg bdg-nw">NEW</span>
+        <span class="bdg bdg-sl">SALE</span>
+        <span class="bdg bdg-so">SOLD OUT</span><!-- solid #c8c8c0 bg, #2e2e28 text (updated) -->
+        <span class="bdg bdg-ac">ACTIVE</span>
+        <span class="bdg bdg-dr">DRAFT</span><!-- #f5f5f0 bg + border (updated) -->
+      </div>
+    </div>
+
+    <div class="story"><div class="st">Disabled</div>
+      <div class="cv"><span class="cv-lbl">State: Disabled</span>
+        <span class="bdg bdg-dis">FEATURED</span>
+        <span class="bdg bdg-dis">NEW</span>
+        <span class="bdg bdg-dis">SALE</span>
+        <span class="bdg bdg-dis">SOLD OUT</span>
+        <span class="bdg bdg-dis">ACTIVE</span>
+        <span class="bdg bdg-dis">DRAFT</span>
+      </div>
+    </div>
+
+    <div class="story"><div class="st">What changed in v1.1</div>
+      <table>
+        <thead><tr><th>Property</th><th>Before</th><th>After (from Figma)</th></tr></thead>
+        <tbody>
+          <tr><td><code>font-size</code></td><td>10px</td><td><strong>9px Bold</strong> — confirmed from node data</td></tr>
+          <tr><td><code>border-radius</code></td><td>2px</td><td><strong>0px</strong> — all badges sharp</td></tr>
+          <tr><td>Sold Out Default</td><td>white bg + grey border</td><td><strong>#c8c8c0 solid bg, #2e2e28 text, no border</strong></td></tr>
+          <tr><td>Draft Default</td><td>transparent bg + grey border</td><td><strong>#f5f5f0 bg + #c8c8c0 border, #787870 text</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="story"><div class="st">Props</div>
+      <table>
+        <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Featured"|"New"|"Sale"|"Sold Out"|"Active"|"Draft"</code></td><td><code>"Featured"</code></td></tr>
+          <tr><td><code>state</code></td><td><code>"Default"|"Disabled"</code></td><td><code>"Default"</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ INPUT ════════════════════════════════════════════════════════ -->
+  <div class="page hidden" id="page-input">
+    <div class="pt">Input</div><div class="pr"></div>
+    <p class="pd">3 types × 5 states = 15 variants. Height: 48px. Border: 2px. Radius: 0. No changes in v1.1.</p>
+    <a class="flink" href="https://www.figma.com/design/ZlxAy3fHcV7aTgJdN4nfbh/Claude-to-Figma?node-id=63-1335" target="_blank">↗ Figma node 63:1335</a>
+
+    <div class="story"><div class="st">Type: Text</div>
+      <div class="cv" style="gap:24px;flex-wrap:wrap;"><span class="cv-lbl">5 States</span>
+        <div class="iw"><span class="il">Label</span><div class="if"><input placeholder="Placeholder…"></div><span class="sub">Default</span></div>
+        <div class="iw"><span class="il foc">Label</span><div class="if foc"><input value="Input value"></div><span class="sub">Focused</span></div>
+        <div class="iw"><span class="il" style="color:var(--err)">Label</span><div class="if err"><input value="Invalid entry"></div><span class="ierr">Required</span><span class="sub">Error</span></div>
+        <div class="iw"><span class="il">Label</span><div class="if dis"><input placeholder="Disabled" disabled></div><span class="sub">Disabled</span></div>
+        <div class="iw"><span class="il">Label</span><div class="if fill"><input value="Filled value"></div><span class="sub">Filled</span></div>
+      </div>
+    </div>
+    <div class="story"><div class="st">Type: Search (+ icon)</div>
+      <div class="cv" style="gap:24px;flex-wrap:wrap;"><span class="cv-lbl">5 States</span>
+        <div class="iw"><div class="if"><input placeholder="Placeholder…"><div class="iico"></div></div><span class="sub">Default</span></div>
+        <div class="iw"><div class="if foc"><input value="Input value"><div class="iico"></div></div><span class="sub">Focused</span></div>
+        <div class="iw"><div class="if err"><input value="Invalid entry"><div class="iico"></div></div><span class="ierr">Required</span><span class="sub">Error</span></div>
+        <div class="iw"><div class="if dis"><input placeholder="Disabled" disabled><div class="iico"></div></div><span class="sub">Disabled</span></div>
+        <div class="iw"><div class="if fill"><input value="Filled value"><div class="iico"></div></div><span class="sub">Filled</span></div>
+      </div>
+    </div>
+    <div class="story"><div class="st">Type: Password (+ eye icon)</div>
+      <div class="cv" style="gap:24px;flex-wrap:wrap;"><span class="cv-lbl">5 States</span>
+        <div class="iw"><div class="if"><input placeholder="Placeholder…" type="password"><div class="iico eye"></div></div><span class="sub">Default</span></div>
+        <div class="iw"><div class="if foc"><input value="••••••••" type="password"><div class="iico eye"></div></div><span class="sub">Focused</span></div>
+        <div class="iw"><div class="if err"><input value="••••••••" type="password"><div class="iico eye"></div></div><span class="ierr">Required</span><span class="sub">Error</span></div>
+        <div class="iw"><div class="if dis"><input placeholder="Disabled" disabled type="password"><div class="iico eye"></div></div><span class="sub">Disabled</span></div>
+        <div class="iw"><div class="if fill"><input value="••••••••" type="password"><div class="iico eye"></div></div><span class="sub">Filled</span></div>
+      </div>
+    </div>
+    <div class="story"><div class="st">Props</div>
+      <table>
+        <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Text"|"Search"|"Password"</code></td><td><code>"Text"</code></td><td>Controls icon</td></tr>
+          <tr><td><code>state</code></td><td><code>"Default"|"Focused"|"Error"|"Disabled"|"Filled"</code></td><td><code>"Default"</code></td><td>Border + label color</td></tr>
+          <tr><td><code>placeholder</code></td><td><code>string</code></td><td><code>"Placeholder…"</code></td><td>Exact Figma string</td></tr>
+          <tr><td><code>label</code></td><td><code>string</code></td><td>—</td><td>Label above field</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ ALERT ════════════════════════════════════════════════════════ -->
+  <div class="page hidden" id="page-alert">
+    <div class="pt">Alert</div><div class="pr"></div>
+    <p class="pd">4 types × 2 states = 8 variants. Structure: 4px bar + 16px gap + content + ✕. Width: 580px. Height: 60px. No changes in v1.1.</p>
+    <a class="flink" href="https://www.figma.com/design/ZlxAy3fHcV7aTgJdN4nfbh/Claude-to-Figma?node-id=63-1397" target="_blank">↗ Figma node 63:1397</a>
+
+    <div class="story"><div class="st">Default</div>
+      <div class="cv col"><span class="cv-lbl">State: Default</span>
+        <div class="alt alt-notice"><div class="alt-bar"></div><div class="alt-gap"></div><div class="alt-body"><div class="alt-title">Notice</div><div class="alt-msg">Token update applied successfully.</div></div><div class="alt-x">✕</div></div>
+        <div class="alt alt-error"><div class="alt-bar"></div><div class="alt-gap"></div><div class="alt-body"><div class="alt-title">Error</div><div class="alt-msg">Validation failed. Review bindings.</div></div><div class="alt-x">✕</div></div>
+        <div class="alt alt-success"><div class="alt-bar"></div><div class="alt-gap"></div><div class="alt-body"><div class="alt-title">Success</div><div class="alt-msg">All 71 tokens published &amp; synced.</div></div><div class="alt-x">✕</div></div>
+        <div class="alt alt-info"><div class="alt-bar"></div><div class="alt-gap"></div><div class="alt-body"><div class="alt-title">Info</div><div class="alt-msg">New Vignelli System version available.</div></div><div class="alt-x">✕</div></div>
+      </div>
+    </div>
+    <div class="story"><div class="st">Dismissed</div>
+      <div class="cv col"><span class="cv-lbl">State: Dismissed</span>
+        <div class="alt alt-notice dis"><div class="alt-bar"></div><div class="alt-gap"></div><div class="alt-body"><div class="alt-title">Notice</div><div class="alt-msg">(dismissed)</div></div></div>
+        <div class="alt alt-error dis"><div class="alt-bar"></div><div class="alt-gap"></div><div class="alt-body"><div class="alt-title">Error</div><div class="alt-msg">(dismissed)</div></div></div>
+        <div class="alt alt-success dis"><div class="alt-bar"></div><div class="alt-gap"></div><div class="alt-body"><div class="alt-title">Success</div><div class="alt-msg">(dismissed)</div></div></div>
+        <div class="alt alt-info dis"><div class="alt-bar"></div><div class="alt-gap"></div><div class="alt-body"><div class="alt-title">Info</div><div class="alt-msg">(dismissed)</div></div></div>
+      </div>
+    </div>
+    <div class="story"><div class="st">Props</div>
+      <table>
+        <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Notice"|"Error"|"Success"|"Info"</code></td><td><code>"Notice"</code></td><td>Controls accent color</td></tr>
+          <tr><td><code>state</code></td><td><code>"Default"|"Dismissed"</code></td><td><code>"Default"</code></td><td>Dismissed greys out</td></tr>
+          <tr><td><code>message</code></td><td><code>string</code></td><td>—</td><td>Body text</td></tr>
+          <tr><td><code>onDismiss</code></td><td><code>() => void</code></td><td>—</td><td>Called on ✕ click</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ NAVIGATION ══════════════════════════════════════════════════ -->
+  <div class="page hidden" id="page-navigation">
+    <div class="pt">Navigation</div><div class="pr"></div>
+    <p class="pd">2 themes × 2 states = 4 variants. Width: 1392px. Height: 64px. No changes in v1.1.</p>
+    <a class="flink" href="https://www.figma.com/design/ZlxAy3fHcV7aTgJdN4nfbh/Claude-to-Figma?node-id=63-1460" target="_blank">↗ Figma node 63:1460</a>
+    <div class="story"><div class="st">Dark / Default + Scrolled</div>
+      <div class="cv" style="padding:0;display:block;"><span class="cv-lbl" style="top:8px;right:8px">Type: Dark</span>
+        <nav class="nav dk"><div class="nav-brand"><div class="nav-acc"></div><span class="nav-nm">BRAND</span></div><div class="nav-links"><span class="nav-li">Work</span><span class="nav-li">About</span><span class="nav-li act">System</span><span class="nav-li">Contact</span></div><button class="nav-cta">GET IN TOUCH</button></nav>
+      </div>
+    </div>
+    <div class="story"><div class="st">Light / Default + Scrolled</div>
+      <div class="cv" style="padding:0;display:block;"><span class="cv-lbl" style="top:8px;right:8px">Type: Light</span>
+        <nav class="nav lt"><div class="nav-brand"><div class="nav-acc"></div><span class="nav-nm">BRAND</span></div><div class="nav-links"><span class="nav-li">Work</span><span class="nav-li">About</span><span class="nav-li act">System</span><span class="nav-li">Contact</span></div><button class="nav-cta">GET IN TOUCH</button></nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ AVATAR ══════════════════════════════════════════════════════ -->
+  <div class="page hidden" id="page-avatar">
+    <div class="pt">Avatar</div><div class="pr"></div>
+    <p class="pd">3 sizes × 4 styles = 12 variants. Small 32px · Medium 48px · Large 64px. No changes in v1.1.</p>
+    <a class="flink" href="https://www.figma.com/design/ZlxAy3fHcV7aTgJdN4nfbh/Claude-to-Figma?node-id=63-1513" target="_blank">↗ Figma node 63:1513</a>
+    <div class="story"><div class="st">Small (32px)</div>
+      <div class="cv" style="align-items:center;gap:24px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><div class="ava ava-sm ava-brand">MV</div><span class="sub">Brand</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><div class="ava ava-sm ava-dark">MV</div><span class="sub">Dark</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><div class="ava ava-sm ava-light">MV</div><span class="sub">Light</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><div class="ava ava-sm ava-outline">MV</div><span class="sub">Outline</span></div>
+      </div>
+    </div>
+    <div class="story"><div class="st">Medium (48px)</div>
+      <div class="cv" style="align-items:center;gap:24px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><div class="ava ava-md ava-brand">MV</div><span class="sub">Brand</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><div class="ava ava-md ava-dark">MV</div><span class="sub">Dark</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><div class="ava ava-md ava-light">MV</div><span class="sub">Light</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><div class="ava ava-md ava-outline">MV</div><span class="sub">Outline</span></div>
+      </div>
+    </div>
+    <div class="story"><div class="st">Large (64px)</div>
+      <div class="cv" style="align-items:center;gap:24px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><div class="ava ava-lg ava-brand">MV</div><span class="sub">Brand</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><div class="ava ava-lg ava-dark">MV</div><span class="sub">Dark</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><div class="ava ava-lg ava-light">MV</div><span class="sub">Light</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><div class="ava ava-lg ava-outline">MV</div><span class="sub">Outline</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CARD ════════════════════════════════════════════════════════ -->
+  <div class="page hidden" id="page-card">
+    <div class="pt">Card</div><div class="pr"></div>
+    <p class="pd">3 themes × 3 variants = 9 variants. Width: 280px. Height: 240px. Feature card has 6px top color rule. No changes in v1.1.</p>
+    <a class="flink" href="https://www.figma.com/design/ZlxAy3fHcV7aTgJdN4nfbh/Claude-to-Figma?node-id=63-1588" target="_blank">↗ Figma node 63:1588</a>
+    <div class="story"><div class="st">Feature</div>
+      <div class="cv" style="align-items:flex-start;gap:24px;flex-wrap:wrap;"><span class="cv-lbl">State: Feature</span>
+        <div class="card lt"><div class="card-rule" style="background:var(--o500)"></div><div class="card-body"><span class="card-eye">FEATURED</span><span class="card-title">Design at the speed of thought.</span><span class="card-txt">Clarity over decoration.</span></div><button class="card-cta">READ MORE</button></div>
+        <div class="card dk"><div class="card-rule" style="background:var(--o500)"></div><div class="card-body"><span class="card-eye">FEATURED</span><span class="card-title">Design at the speed of thought.</span><span class="card-txt">Clarity over decoration.</span></div><button class="card-cta">READ MORE</button></div>
+        <div class="card br"><div class="card-rule" style="background:rgba(255,255,255,.4)"></div><div class="card-body"><span class="card-eye">FEATURED</span><span class="card-title">Design at the speed of thought.</span><span class="card-txt">Clarity over decoration.</span></div><button class="card-cta">READ MORE</button></div>
+      </div>
+    </div>
+    <div class="story"><div class="st">Stat</div>
+      <div class="cv" style="align-items:flex-start;gap:24px;flex-wrap:wrap;"><span class="cv-lbl">State: Stat</span>
+        <div class="card lt"><div class="card-body"><span class="card-eye">COMPONENTS</span><span class="card-stat">12</span><span class="card-txt">Production-ready UI components</span></div></div>
+        <div class="card dk"><div class="card-body"><span class="card-eye">COMPONENTS</span><span class="card-stat">12</span><span class="card-txt">Production-ready UI components</span></div></div>
+        <div class="card br"><div class="card-body"><span class="card-eye">COMPONENTS</span><span class="card-stat">12</span><span class="card-txt">Production-ready UI components</span></div></div>
+      </div>
+    </div>
+    <div class="story"><div class="st">Minimal</div>
+      <div class="cv" style="align-items:flex-start;gap:24px;flex-wrap:wrap;"><span class="cv-lbl">State: Minimal</span>
+        <div class="card lt"><div class="card-body"><span class="card-eye">ARTICLE</span><div class="card-div"></div><span class="card-title">The structure of good design.</span><span class="card-txt">Order is not a constraint. It is the canvas.</span><a class="card-lnk">READ →</a></div></div>
+        <div class="card dk"><div class="card-body"><span class="card-eye">ARTICLE</span><div class="card-div"></div><span class="card-title">The structure of good design.</span><span class="card-txt">Order is not a constraint. It is the canvas.</span><a class="card-lnk">READ →</a></div></div>
+        <div class="card br"><div class="card-body"><span class="card-eye">ARTICLE</span><div class="card-div"></div><span class="card-title">The structure of good design.</span><span class="card-txt">Order is not a constraint. It is the canvas.</span><a class="card-lnk">READ →</a></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ COLORS ══════════════════════════════════════════════════════ -->
+  <div class="page hidden" id="page-colors">
+    <div class="pt">Colors</div><div class="pr"></div>
+    <p class="pd">22 color variables from Vignelli System. Token: <code>color/[group]/[name]</code>.</p>
+    <div class="story"><div class="st">Primary Orange</div>
+      <div class="tgrid">
+        <div class="tc"><div class="sw" style="background:#5a57e0"></div><div class="ti"><div class="tn">orange-100</div><div class="tv">#5A57E0</div><div class="tdesc">Lightest tint</div></div></div>
+        <div class="tc"><div class="sw" style="background:#FF8C42"></div><div class="ti"><div class="tn">orange-300</div><div class="tv">#FF8C42</div><div class="tdesc">Medium tint</div></div></div>
+        <div class="tc"><div class="sw" style="background:#E8450A"></div><div class="ti"><div class="tn">orange-500</div><div class="tv">#E8450A</div><div class="tdesc">Core brand</div></div></div>
+        <div class="tc"><div class="sw" style="background:#B33000"></div><div class="ti"><div class="tn">orange-700</div><div class="tv">#B33000</div><div class="tdesc">Deep</div></div></div>
+        <div class="tc"><div class="sw" style="background:#6B1A00"></div><div class="ti"><div class="tn">orange-900</div><div class="tv">#6B1A00</div><div class="tdesc">Darkest</div></div></div>
+      </div>
+    </div>
+    <div class="story"><div class="st">Neutral</div>
+      <div class="tgrid">
+        <div class="tc"><div class="sw" style="background:#FFFFFF;border-bottom:1px solid #e0e0e0"></div><div class="ti"><div class="tn">white</div><div class="tv">#FFFFFF</div></div></div>
+        <div class="tc"><div class="sw" style="background:#F5F5F0"></div><div class="ti"><div class="tn">100</div><div class="tv">#F5F5F0</div></div></div>
+        <div class="tc"><div class="sw" style="background:#C8C8C0"></div><div class="ti"><div class="tn">300</div><div class="tv">#C8C8C0</div></div></div>
+        <div class="tc"><div class="sw" style="background:#787870"></div><div class="ti"><div class="tn">500</div><div class="tv">#787870</div></div></div>
+        <div class="tc"><div class="sw" style="background:#2E2E28"></div><div class="ti"><div class="tn">700</div><div class="tv">#2E2E28</div></div></div>
+        <div class="tc"><div class="sw" style="background:#141410"></div><div class="ti"><div class="tn">900</div><div class="tv">#141410</div></div></div>
+      </div>
+    </div>
+    <div class="story"><div class="st">Semantic</div>
+      <div class="tgrid">
+        <div class="tc"><div class="sw" style="background:#E8450A"></div><div class="ti"><div class="tn">accent</div><div class="tv">#E8450A</div></div></div>
+        <div class="tc"><div class="sw" style="background:#B33000"></div><div class="ti"><div class="tn">accent-hover</div><div class="tv">#B33000</div></div></div>
+        <div class="tc"><div class="sw" style="background:#CC1A00"></div><div class="ti"><div class="tn">error</div><div class="tv">#CC1A00</div></div></div>
+        <div class="tc"><div class="sw" style="background:#1A7A3C"></div><div class="ti"><div class="tn">success</div><div class="tv">#1A7A3C</div></div></div>
+        <div class="tc"><div class="sw" style="background:#3A3ADB"></div><div class="ti"><div class="tn">info</div><div class="tv">#3A3ADB</div></div></div>
+        <div class="tc"><div class="sw" style="background:#C8C8C0"></div><div class="ti"><div class="tn">disabled</div><div class="tv">#C8C8C0</div></div></div>
+        <div class="tc"><div class="sw" style="background:#F5F5F0"></div><div class="ti"><div class="tn">background</div><div class="tv">#F5F5F0</div></div></div>
+        <div class="tc"><div class="sw" style="background:#FFFFFF;border-bottom:1px solid #e0e0e0"></div><div class="ti"><div class="tn">surface</div><div class="tv">#FFFFFF</div></div></div>
+        <div class="tc"><div class="sw" style="background:#141410"></div><div class="ti"><div class="tn">ink</div><div class="tv">#141410</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TYPOGRAPHY ══════════════════════════════════════════════════ -->
+  <div class="page hidden" id="page-type">
+    <div class="pt">Typography</div><div class="pr"></div>
+    <p class="pd">Font: Helvetica Neue. 8-step scale 10px–80px. Weights: 400 / 500 / 700 / 900.</p>
+    <div class="story"><div class="st">Type Scale</div>
+      <div style="border:1px solid var(--n300);border-radius:4px;overflow:hidden;margin-bottom:32px">
+        <div class="type-row"><div class="type-meta">3xl · 80px · 900</div><span style="font-size:80px;font-weight:900;line-height:1">Aa</span></div>
+        <div class="type-row"><div class="type-meta">2xl · 56px · 900</div><span style="font-size:56px;font-weight:900;line-height:1">Design</span></div>
+        <div class="type-row"><div class="type-meta">xl · 40px · 700</div><span style="font-size:40px;font-weight:700;line-height:1.2">Heading One</span></div>
+        <div class="type-row"><div class="type-meta">lg · 28px · 700</div><span style="font-size:28px;font-weight:700;line-height:1.2">Subheading</span></div>
+        <div class="type-row"><div class="type-meta">md · 20px · 500</div><span style="font-size:20px;font-weight:500;line-height:1.4">Lead paragraph</span></div>
+        <div class="type-row"><div class="type-meta">base · 16px · 400</div><span style="font-size:16px;font-weight:400;line-height:1.5">Body text — the canvas upon which ideas are placed with precision.</span></div>
+        <div class="type-row"><div class="type-meta">sm · 12px · 400</div><span style="font-size:12px;font-weight:400;line-height:1.5">Supporting text, captions, helper copy</span></div>
+        <div class="type-row" style="border-bottom:none"><div class="type-meta">xs · 10px · 700</div><span style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">LABEL / EYEBROW / ALL CAPS</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SPACING ══════════════════════════════════════════════════════ -->
+  <div class="page hidden" id="page-spacing">
+    <div class="pt">Spacing &amp; Grid</div><div class="pr"></div>
+    <p class="pd">10-step 8pt grid. Grid: 12 columns · 24px gutters · 48px margins.</p>
+    <div class="story"><div class="st">Spacing Scale</div>
+      <div class="cv col" style="padding:48px;">
+        <div class="sp-demo">
+          <div class="sp-wrap"><div class="sp-block" style="width:4px;height:4px"></div><div class="sp-lbl">1·4px</div></div>
+          <div class="sp-wrap"><div class="sp-block" style="width:8px;height:8px"></div><div class="sp-lbl">2·8px</div></div>
+          <div class="sp-wrap"><div class="sp-block" style="width:12px;height:12px"></div><div class="sp-lbl">3·12px</div></div>
+          <div class="sp-wrap"><div class="sp-block" style="width:16px;height:16px"></div><div class="sp-lbl">4·16px</div></div>
+          <div class="sp-wrap"><div class="sp-block" style="width:24px;height:24px"></div><div class="sp-lbl">5·24px</div></div>
+          <div class="sp-wrap"><div class="sp-block" style="width:32px;height:32px"></div><div class="sp-lbl">6·32px</div></div>
+          <div class="sp-wrap"><div class="sp-block" style="width:48px;height:48px"></div><div class="sp-lbl">7·48px</div></div>
+          <div class="sp-wrap"><div class="sp-block" style="width:64px;height:64px"></div><div class="sp-lbl">8·64px</div></div>
+          <div class="sp-wrap"><div class="sp-block" style="width:96px;height:96px"></div><div class="sp-lbl">9·96px</div></div>
+          <div class="sp-wrap"><div class="sp-block" style="width:128px;height:128px"></div><div class="sp-lbl">10·128px</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+<script>
+const map={button:'Button',badge:'Badge',input:'Input',alert:'Alert',navigation:'Navigation',avatar:'Avatar',card:'Card',colors:'Colors',type:'Typography',spacing:'Spacing & Grid'};
+function show(k){
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById('page-'+k).classList.remove('hidden');
+  document.getElementById('bc').textContent=map[k]||k;
+  document.querySelectorAll('.nl').forEach(l=>l.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  window.scrollTo({top:0});
+}
+</script>
+</body>
+</html>
