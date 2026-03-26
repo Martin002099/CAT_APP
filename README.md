@@ -1,73 +1,65 @@
-# React + TypeScript + Vite
+# CAT APP — Purrfect Match
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A complete mobile app design system and screen implementations built with the **Vignelli System** UI Kit.
 
-Currently, two official plugins are available:
+## Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+CAT_APP/
+├── ui-kit/
+│   └── storybook.html        # Vignelli System component storybook (open in browser)
+├── app/
+│   ├── catapp_screens.tsx    # All 5 screens · React Native + StyleSheet
+│   ├── CatApp.tsx            # All 5 screens · React + inline styles
+│   └── HomeScreen.tsx        # Home screen · React + Tailwind · full spec notes
+└── docs/
+    └── dev_handoff.md        # Design tokens, component map, screen specs
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Screens
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Screen | Node ID | Description |
+|--------|---------|-------------|
+| 01 — Home | `6:1525` | Cat listings, search, filter chips |
+| 02 — Cat Profile | `6:1612` | Cat detail, stats, adoption CTA |
+| 03 — Search & Filter | `6:1676` | Focused search, filter panel, results |
+| 04 — Adopt Form | `6:1764` | Multi-step adoption form |
+| 05 — Success | `6:1837` | Application submitted confirmation |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Design System
+
+Built on the **Vignelli System** — a Massimo Vignelli-inspired design system with:
+- **71 design tokens** (colors, typography, spacing, motion)
+- **7 component sets** (Button, Badge, Input, Alert, Navigation, Avatar, Card)
+- **12-column grid** · 24px gutters · 48px margins
+
+### Colors
+| Token | Value | Usage |
+|-------|-------|-------|
+| `accent` | `#E8450A` | Primary brand orange |
+| `ink` | `#141410` | Primary text |
+| `background` | `#F5F5F0` | Page background |
+| `surface` | `#FFFFFF` | Cards, panels |
+| `success` | `#1A7A3C` | Success states |
+| `error` | `#CC1A00` | Error states |
+
+### Typography
+- **Font**: Helvetica Neue (primary), Courier New (mono)
+- **Scale**: 10 / 12 / 16 / 20 / 28 / 40 / 56 / 80px
+- **Weights**: 400 / 500 / 700 / 900
+
+## Figma Files
+
+- **UI Kit**: [Claude to Figma](https://www.figma.com/design/ZlxAy3fHcV7aTgJdN4nfbh/Claude-to-Figma)
+- **App**: [CAT APP](https://www.figma.com/design/qbgK9fZyaOwpAplriR80Ez/CAT-APP)
+
+## UI Kit Storybook
+
+Open `ui-kit/storybook.html` in any browser — no build step required.
+
+Includes live rendered variants for all 7 components with:
+- All type × state combinations
+- Props tables
+- Usage code snippets
+- Direct Figma node links
+- Token reference pages (Colors, Typography, Spacing)
